@@ -11,7 +11,7 @@ module OmniAuth
     # You must generally register your application with the provider and
     # utilize an application id and secret in order to authenticate using
     # OAuth 2.0.
-    class OAuth2
+    class Marketingcloud
       include OmniAuth::Strategy
 
       def self.inherited(subclass)

@@ -1,5 +1,5 @@
 module OmniAuth
-  module OAuth2
+  module Marketingcloud
     VERSION = "1.8.0".freeze
   end
 end
