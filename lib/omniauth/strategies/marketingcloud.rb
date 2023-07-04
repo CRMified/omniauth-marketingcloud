@@ -20,15 +20,22 @@ module OmniAuth
 
       args %i[client_id client_secret]
 
-      option :client_id, nil
-      option :client_secret, nil
-      option :client_options, {}
+      #option :client_id, 'xxx'
+      #option :client_secret, 'xxx'
+      option :client_options, {
+        :site          => 'https://mcb111m0kfhxpsc80ynt34-7rv04.auth.marketingcloudapis.com',
+        :authorize_url => '/v2/authorize',
+        :token_url     => '/v2/token',
+        :grant_type    => 'authorization_code',
+        :auth_scheme   => :request_body,
+        :token_method  => :post
+      }
       option :authorize_params, {}
       option :authorize_options, %i[scope state]
       option :token_params, {}
       option :token_options, []
       option :auth_token_params, {}
-      option :provider_ignores_state, false
+      option :provider_ignores_state, true
       option :pkce, false
       option :pkce_verifier, nil
       option :pkce_options, {
@@ -47,6 +54,21 @@ module OmniAuth
         ::OAuth2::Client.new(options.client_id, options.client_secret, deep_symbolize(options.client_options))
       end
 
+      uid{ raw_info['user']['sub'] }
+
+      info do
+        {
+          :name => raw_info['user']['name'],
+          :email => raw_info['user']['email']
+        }
+      end
+
+      extra do
+        {
+          'raw_info' => raw_info
+        }
+      end
+
       credentials do
         hash = {"token" => access_token.token}
         hash["refresh_token"] = access_token.refresh_token if access_token.expires? && access_token.refresh_token
@@ -55,8 +77,16 @@ module OmniAuth
         hash
       end
 
+      def raw_info
+        @raw_info ||= access_token.get('/v2/userinfo').parsed
+      end
+
+      def callback_url
+        options[:redirect_uri] || (full_host + script_name + callback_path)
+      end
+
       def request_phase
-        redirect client.auth_code.authorize_url({:redirect_uri => callback_url}.merge(authorize_params))
+        redirect client.auth_code.authorize_url({:redirect_uri => callback_url})
       end
 
       def authorize_params # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -123,7 +153,7 @@ module OmniAuth
 
       def build_access_token
         verifier = request.params["code"]
-        client.auth_code.get_token(verifier, {:redirect_uri => callback_url}.merge(token_params.to_hash(:symbolize_keys => true)), deep_symbolize(options.auth_token_params))
+        client.auth_code.get_token(verifier, {:redirect_uri => callback_url})
       end
 
       def deep_symbolize(options)
