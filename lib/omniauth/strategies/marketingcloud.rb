@@ -156,7 +156,8 @@ module OmniAuth
         tssd_url = "https://#{request.params["tssd"]}.auth.marketingcloudapis.com"
 
         c_options = options.client_options
-        c_options[:site] = tssd_url
+        c_options[:site] = tssd_url if request.params["tssd"].present?
+
         client(c_options).auth_code.get_token(verifier, {:redirect_uri => callback_url})
       end
 
