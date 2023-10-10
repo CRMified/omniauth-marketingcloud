@@ -153,13 +153,11 @@ module OmniAuth
 
       def build_access_token
         verifier = request.params["code"]
-        p "============== omniauth: code: #{request.params["code"]}"
-        p "============== omniauth: tssd: #{request.params["tssd"]}"
         tssd_url = "https://#{request.params["tssd"]}.auth.marketingcloudapis.com"
-        p "============== omniauth: tssd_url: #{tssd_url}"
+
         c_options = options.client_options
         c_options[:site] = tssd_url if request.params["tssd"].present?
-        p "============== omniauth: c_options: #{c_options}"
+
         client(c_options).auth_code.get_token(verifier, {:redirect_uri => callback_url})
       end
 
