@@ -50,8 +50,12 @@ module OmniAuth
 
       attr_accessor :access_token
 
-      def client(c_options=options.client_options)
-        ::OAuth2::Client.new(options.client_id, options.client_secret, deep_symbolize(c_options))
+      def client(params={})
+        ::OAuth2::Client.new(
+          options.client_id,
+          options.client_secret,
+          deep_symbolize(options.client_options.merge(params))
+        )
       end
 
       uid{ raw_info['user']['sub'] }
@@ -155,7 +159,7 @@ module OmniAuth
         verifier = request.params["code"]
         tssd_url = "https://#{request.params["tssd"]}.auth.marketingcloudapis.com"
 
-        c_options = options.client_options
+        c_options = {}
         c_options[:site] = tssd_url if request.params["tssd"].present?
 
         client(c_options).auth_code.get_token(verifier, {:redirect_uri => callback_url})
